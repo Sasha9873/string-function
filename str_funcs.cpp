@@ -106,7 +106,7 @@ char *my_strncat(char *dest, const char *src, size_t n)
 
 char *my_fgets(char *str, int size, FILE *stream)
 {
-	if(feof(stream))  //true if EOF
+	if(feof(stream) || ferror(stream))  //true if EOF
 		return NULL;
 
 	int i = 0;
@@ -114,30 +114,31 @@ char *my_fgets(char *str, int size, FILE *stream)
 	{
 		int sym = getc(stream);
 
-		if(sym != EOF)
+		if(feof(stream) || ferror(stream))
+		{
+			if(!i)
+				return NULL;
+			
+			str[i] = '\0';
+
+			return str;
+		}
+		else
 		{
 			str[i] = (char)sym;
 			if(sym == '\n')
 			{
-				++i;
-				break;
+				str[i] = '\n';
+				str[i + 1] = '\0';
+				return str;
 			}
 
-		}
-		else
-		{
-			if(ferror(stream))
-				return NULL;
-
-			//--i;
-			break;
+			if(sym == '\0')
+				return str;
 		}
 	}
 
-	//if(i == size - 1)
-		//str[size - 1] = '\0';
-	//else
-		str[i + 1] = '\0';
+	str[i] = '\0';
 
 	return str;
 }
